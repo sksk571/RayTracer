@@ -21,8 +21,8 @@ namespace RayTracer
                 { 
                     new Sphere(new Vector3(0,0,-1), 0.5f, new Lambertian(new Vector3(0.8f, 0.3f, 0.3f))),
                     new Sphere(new Vector3(0,-100.5f,-1), 100f, new Lambertian(new Vector3(0.8f, 0.8f, 0.0f))),
-                    new Sphere(new Vector3(1,0,-1), 0.5f, new Metal(new Vector3(0.8f, 0.6f, 0.2f))),
-                    new Sphere(new Vector3(-1,0,-1), 0.5f, new Metal(new Vector3(0.8f, 0.8f, 0.8f))),
+                    new Sphere(new Vector3(1,0,-1), 0.5f, new Metal(new Vector3(0.8f, 0.6f, 0.2f), 0.3f)),
+                    new Sphere(new Vector3(-1,0,-1), 0.5f, new Metal(new Vector3(0.8f, 0.8f, 0.8f), 0.8f)),
                 });
                 Camera cam = new Camera();
     
