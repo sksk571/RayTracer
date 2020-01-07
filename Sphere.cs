@@ -27,8 +27,8 @@ namespace RayTracer
             else
             {
                 float t = (-b - (float)Math.Sqrt(discriminant)) / (2.0f * a);
-                if (t < tMin || t > tMax)
-                    t = (-b + (float)Math.Sqrt(discriminant)) / (2.0f * a);
+                // if (t < tMin || t > tMax)
+                //     t = (-b + (float)Math.Sqrt(discriminant)) / (2.0f * a);
                 if (t >= tMin && t <= tMax)
                 {
                     hit.T = t;
