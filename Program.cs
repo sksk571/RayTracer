@@ -34,21 +34,30 @@ namespace RayTracer
 
         static Vector3 Color(in Ray r)
         {
-            if (HitSphere(new Vector3(0, 0, -1), 0.5f, r))
-                return new Vector3(1, 0, 0);
+            Vector3 center = new Vector3(0, 0, -1);
+            float t = HitSphere(center, 0.5f, r);
+            if (t > 0)
+            {
+                Vector3 normal = Vector3.Normalize(r.PointAtParameter(t) - center);
+                return 0.5f * new Vector3(normal.X + 1.0f, normal.Y + 1.0f, normal.Z + 1.0f);
+            }
+
             Vector3 unitDirection = Vector3.Normalize(r.Direction);
-            float t = 0.5f * (unitDirection.Y + 1.0f);
+            t = 0.5f * (unitDirection.Y + 1.0f);
             return Vector3.Lerp(new Vector3(1.0f, 1.0f, 1.0f), new Vector3(0.5f, 0.7f, 1.0f), t);
         }
 
-        static bool HitSphere(in Vector3 center, float radius, in Ray r)
+        static float HitSphere(in Vector3 center, float radius, in Ray r)
         {
             Vector3 oc = r.Origin - center;
             float a = Vector3.Dot(r.Direction, r.Direction);
             float b = 2.0f * Vector3.Dot(oc, r.Direction);
             float c = Vector3.Dot(oc, oc) - radius * radius;
             float discriminant = b*b - 4*a*c;
-            return discriminant > 0;
+            if (discriminant < 0.0f)
+                return -1.0f;
+            else
+                return (-b - (float)Math.Sqrt(discriminant)) / (2.0f * a);
         }
     }
 }
