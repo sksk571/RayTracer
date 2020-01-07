@@ -12,24 +12,30 @@ namespace RayTracer
             {
                 int nx = 200;
                 int ny = 100;
+                int ns = 100;
                 writer.Write($"P3\n{nx} {ny}\n255\n");
-                Vector3 lowerLeftCorner = new Vector3(-2.0f, -1.0f, -1.0f);
-                Vector3 horizontal = new Vector3(4.0f, 0.0f, 0.0f);
-                Vector3 vertical = new Vector3(0.0f, 2.0f, 0.0f);
-                Vector3 origin = new Vector3(0.0f, 0.0f, 0.0f);
+
                 IHittable world = new HittableList(new[]
                 { 
                     new Sphere(new Vector3(0,0,-1), 0.5f),
                     new Sphere(new Vector3(0,-100.5f,-1), 100f),
                 });
+                Camera cam = new Camera();
+                Random rand = new Random();
 
                 for (int j = ny - 1; j >= 0; --j)
                     for (int i = 0; i < nx; ++i)
                     {
-                        float u = ((float)i) / nx;
-                        float v = ((float)j) / ny;
-                        Ray r = new Ray(origin, lowerLeftCorner + u * horizontal + v * vertical);
-                        Vector3 color = Color(r, world);
+                        Vector3 color = Vector3.Zero;
+                        for (int s = 0; s < ns; ++s)
+                        {
+                            float u = ((float)i + (float)rand.NextDouble()) / nx;
+                            float v = ((float)j + (float)rand.NextDouble()) / ny;
+                            Ray r = cam.GetRay(u, v);
+                            color += Color(r, world);
+                        }
+                        color /= ns;
+
                         int ir = (int)(255 * color.X);
                         int ig = (int)(255 * color.Y);
                         int ib = (int)(255 * color.Z);
