@@ -7,11 +7,13 @@ namespace RayTracer
     {
         private readonly Vector3 center;
         private readonly float radius;
+        private readonly Material material;
 
-        public Sphere(Vector3 center, float radius)
+        public Sphere(Vector3 center, float radius, Material material)
         {
             this.center = center;
             this.radius = radius;
+            this.material = material;
         }
 
         public bool Hit(in Ray r, float tMin, float tMax, ref HitRecord hit)
@@ -27,13 +29,14 @@ namespace RayTracer
             else
             {
                 float t = (-b - (float)Math.Sqrt(discriminant)) / (2.0f * a);
-                // if (t < tMin || t > tMax)
-                //     t = (-b + (float)Math.Sqrt(discriminant)) / (2.0f * a);
+                if (t < tMin || t > tMax)
+                    t = (-b + (float)Math.Sqrt(discriminant)) / (2.0f * a);
                 if (t >= tMin && t <= tMax)
                 {
                     hit.T = t;
                     hit.P = r.PointAtParameter(t);
                     hit.Normal = (hit.P - center) / radius;
+                    hit.Material = material;
                     return true;
                 }
                 return false;

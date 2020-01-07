@@ -19,8 +19,10 @@ namespace RayTracer
 
                 IHittable world = new HittableList(new[]
                 { 
-                    new Sphere(new Vector3(0,0,-1), 0.5f),
-                    new Sphere(new Vector3(0,-100.5f,-1), 100f),
+                    new Sphere(new Vector3(0,0,-1), 0.5f, new Lambertian(new Vector3(0.8f, 0.3f, 0.3f))),
+                    new Sphere(new Vector3(0,-100.5f,-1), 100f, new Lambertian(new Vector3(0.8f, 0.8f, 0.0f))),
+                    new Sphere(new Vector3(1,0,-1), 0.5f, new Metal(new Vector3(0.8f, 0.6f, 0.2f))),
+                    new Sphere(new Vector3(-1,0,-1), 0.5f, new Metal(new Vector3(0.8f, 0.8f, 0.8f))),
                 });
                 Camera cam = new Camera();
     
@@ -30,10 +32,10 @@ namespace RayTracer
                         Vector3 color = Vector3.Zero;
                         for (int s = 0; s < ns; ++s)
                         {
-                            float u = ((float)i + (float)rand.NextDouble()) / nx;
-                            float v = ((float)j + (float)rand.NextDouble()) / ny;
+                            float u = ((float)i + Util.Rand()) / nx;
+                            float v = ((float)j + Util.Rand()) / ny;
                             Ray r = cam.GetRay(u, v);
-                            color += Color(r, world);
+                            color += Color(r, world, 0);
                         }
                         color /= ns;
                         // gamma correction
@@ -47,29 +49,23 @@ namespace RayTracer
             }
         }
 
-        static Vector3 Color(in Ray r, IHittable world)
+        static Vector3 Color(in Ray r, IHittable world, int depth)
         {
             HitRecord hit = new HitRecord();
             if (world.Hit(r, 0.001f, float.MaxValue, ref hit))
             {
-                Vector3 target = hit.P + hit.Normal + RandomInUnitSphere();
-                return 0.5f * Color(new Ray(hit.P, target - hit.P), world);
-                //return 0.5f * new Vector3(hit.Normal.X + 1.0f, hit.Normal.Y + 1.0f, hit.Normal.Z + 1.0f);
-            }
+                Ray scattered;
+                Vector3 attenuation;
+                if (depth < 50 && hit.Material.Scatter(r, hit, out attenuation, out scattered))
+                {
+                    return attenuation * Color(scattered, world, depth + 1);
+                }
+                else return Vector3.Zero;
+           }
 
             Vector3 unitDirection = Vector3.Normalize(r.Direction);
             float t = 0.5f * (unitDirection.Y + 1.0f);
             return Vector3.Lerp(new Vector3(1.0f, 1.0f, 1.0f), new Vector3(0.5f, 0.7f, 1.0f), t);
-        }
-
-        static Vector3 RandomInUnitSphere()
-        {
-            Vector3 p;
-            do
-            {
-                p = 2.0f * new Vector3((float)rand.NextDouble(), (float)rand.NextDouble(), (float)rand.NextDouble()) - Vector3.One;
-            } while (p.LengthSquared() >= 1.0f);
-            return p;
         }
     }
 }
