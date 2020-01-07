@@ -17,15 +17,9 @@ namespace RayTracer
                 int ns = 100;
                 writer.Write($"P3\n{nx} {ny}\n255\n");
 
-                IHittable world = new HittableList(new[]
-                { 
-                    new Sphere(new Vector3(0,0,-1), 0.5f, new Lambertian(new Vector3(0.8f, 0.3f, 0.3f))),
-                    new Sphere(new Vector3(0,-100.5f,-1), 100f, new Lambertian(new Vector3(0.8f, 0.8f, 0.0f))),
-                    new Sphere(new Vector3(1,0,-1), 0.5f, new Metal(new Vector3(0.8f, 0.6f, 0.2f), 0.3f)),
-                    new Sphere(new Vector3(-1,0,-1), 0.5f, new Dielectric(1.8f)),
-                });
+                IHittable world = RandomScene();
                 //Camera cam = new Camera(90.0f, ((float)nx) / ny);
-                Camera cam = new Camera(new Vector3(-2,2,1), new Vector3(0,0,-1), new Vector3(0,1,0), 45.0f, ((float)nx) / ny);
+                Camera cam = new Camera(new Vector3(-2,2,1), new Vector3(0,0,-1), new Vector3(0,1,0), 90.0f, ((float)nx) / ny);
     
                 for (int j = ny - 1; j >= 0; --j)
                     for (int i = 0; i < nx; ++i)
@@ -67,6 +61,40 @@ namespace RayTracer
             Vector3 unitDirection = Vector3.Normalize(r.Direction);
             float t = 0.5f * (unitDirection.Y + 1.0f);
             return Vector3.Lerp(new Vector3(1.0f, 1.0f, 1.0f), new Vector3(0.5f, 0.7f, 1.0f), t);
+        }
+
+        static IHittable RandomScene()
+        {
+            int n = 485;
+            IHittable[] list = new IHittable[n];
+            list[0] = new Sphere(new Vector3(0, -1000, 0), 1000, new Lambertian(new Vector3(0.5f, 0.5f, 0.5f)));
+            int i = 1;
+            for (int a = -11; a < 11; ++a)
+                for (int b = -11; b < 11; ++b)
+                {
+                    float chooseMat = Util.Rand();
+                    Vector3 center = new Vector3(a + 0.9f * Util.Rand(), 0.2f, b + 0.9f*Util.Rand());
+                    if ((center - new Vector3(4, 0.2f, 0)).Length() > 0.9f)
+                    {
+                        if (chooseMat < 0.8f)
+                        {
+                            list[i++] = new Sphere(center, 0.2f, new Lambertian(new Vector3(Util.Rand() * Util.Rand(),Util.Rand() * Util.Rand(),Util.Rand() * Util.Rand())));
+                        }
+                        else if (chooseMat < 0.95f)
+                        {
+                            list[i++] = new Sphere(center, 0.2f, 
+                                new Metal(new Vector3(0.5f*(1 + Util.Rand()), 0.5f*(1 + Util.Rand()), 0.5f*(1 + Util.Rand())), 0.5f*(1 + Util.Rand())));
+                        }
+                        else
+                        {
+                            list[i++] = new Sphere(center, 0.2f, new Dielectric(1.5f));
+                        }
+                    }
+                }
+            list[i++] = new Sphere(new Vector3(0, 1, 0), 1.0f, new Dielectric(1.5f));
+            list[i++] = new Sphere(new Vector3(-4, 1, 0), 1.0f, new Lambertian(new Vector3(0.4f, 0.2f, 0.1f)));
+            list[i++] = new Sphere(new Vector3(4, 1, 0), 1.0f, new Metal(new Vector3(0.7f, 0.6f, 0.5f), 0.0f));
+            return new HittableList(list);
         }
     }
 }
