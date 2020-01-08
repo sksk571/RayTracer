@@ -28,16 +28,20 @@ namespace RayTracer
             this.u = Vector3.Normalize(Vector3.Cross(vUp, w));
             this.v = Vector3.Cross(w, u);
             this.origin = vLookFrom;
-            this.lowerLeftCorner = vLookFrom - focusDist*(halfWidth*u - halfHeight*v-w);
+            this.lowerLeftCorner = vLookFrom - focusDist*halfWidth*u - focusDist*halfHeight*v - focusDist*w;
             this.horizontal = 2*focusDist*halfWidth*u;
             this.vertical = 2*focusDist*halfHeight*v;
         }
 
         public Ray GetRay(float s, float t)
         {
-            //Vector3 rd = lensRadius * Util.RandInUnitDisk();
-            //Vector3 offset = u * rd.X + v * rd.Y;
             Vector3 offset = Vector3.Zero;
+            if (lensRadius > 0.0f)
+            {
+                Vector3 rd = lensRadius * Util.RandInUnitDisk();
+                offset = u * rd.X + v * rd.Y;            
+            }
+
             return new Ray(origin + offset, lowerLeftCorner + s * horizontal + t * vertical - origin - offset);
         }
     }

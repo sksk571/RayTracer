@@ -25,8 +25,8 @@ namespace RayTracer
                         new Sphere(new Vector3(1,0,-1), 0.5f, new Metal(new Vector3(0.8f, 0.6f, 0.2f), 0.3f)),
                         new Sphere(new Vector3(-1,0,-1), 0.5f, new Dielectric(1.8f)),
                     });
-                Camera cam = new Camera(new Vector3(0,0,0), new Vector3(0,0,-1), new Vector3(0,1,0), 90.0f, ((float)nx) / ny, 2.0f);
-                //Camera cam = new Camera(new Vector3(3,3,2), new Vector3(0,0,-1), new Vector3(0,1,0), 90.0f, ((float)nx) / ny, 2.0f);
+                Camera cam = new Camera(new Vector3(0,0,0), new Vector3(0,0,-1), new Vector3(0,1,0), 90.0f, ((float)nx) / ny, 0.0f);
+                //Camera cam = new Camera(new Vector3(3,3,2), new Vector3(0,0,-1), new Vector3(0,1,0), 20.0f, ((float)nx) / ny, 0.0f);
     
                 for (int j = ny - 1; j >= 0; --j)
                     for (int i = 0; i < nx; ++i)
