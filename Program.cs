@@ -13,14 +13,14 @@ namespace RayTracer
         {
             using (var writer = File.CreateText(@"./out/result.ppm"))
             {
-                int nx = 400;
-                int ny = 200;
+                int nx = 800;
+                int ny = 400;
                 int ns = 100;
                 writer.Write($"P3\n{nx} {ny}\n255\n");
 
                 Util.InitRandom(Environment.TickCount);
                 IHittable world = RandomScene();
-                Camera cam = new Camera(new Vector3(9.5f, 2f, 2.5f), new Vector3(3, 0.5f, 0.65f), new Vector3(0,1,0), 45.0f, ((float)nx) / ny, 0.01f);
+                Camera cam = new Camera(new Vector3(9.5f, 2f, 2.5f), new Vector3(3, 0.5f, 0.65f), new Vector3(0,1,0), 25.0f, ((float)nx) / ny, 0.01f);
                 Vector3[,] fb = new Vector3[ny, nx];
                 Parallel.For(0, ny, y =>
                 {
