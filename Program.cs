@@ -16,7 +16,6 @@ namespace RayTracer
                 int nx = 800;
                 int ny = 400;
                 int ns = 100;
-                writer.Write($"P3\n{nx} {ny}\n255\n");
 
                 Util.InitRandom(Environment.TickCount);
                 IHittable world = RandomScene();
@@ -42,6 +41,7 @@ namespace RayTracer
                         fb[ny-y-1,x] = color;
                     }
                 });
+                writer.Write($"P3\n{nx} {ny}\n255\n");
                 foreach (var color in fb)
                 {
                     int ir = (int)(255 * color.X);
