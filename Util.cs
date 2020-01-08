@@ -5,8 +5,13 @@ namespace RayTracer
 {
     class Util
     {
-        // NOT THREADSAFE!
-        private static Random rand = new Random();
+        [ThreadStatic]
+        private static Random rand;// = new Random();
+
+        public static void InitRandom(int seed)
+        {
+            rand = new Random(seed);
+        }
 
         public static float Rand()
         {
@@ -18,7 +23,7 @@ namespace RayTracer
             Vector3 p;
             do
             {
-                p = 2.0f * new Vector3((float)rand.NextDouble(), (float)rand.NextDouble(), (float)rand.NextDouble()) - Vector3.One;
+                p = 2.0f * new Vector3(Rand(), Rand(), Rand()) - Vector3.One;
             } while (p.LengthSquared() >= 1.0f);
             return p;
         }
@@ -28,7 +33,7 @@ namespace RayTracer
             Vector3 p;
             do
             {
-                p = 2.0f * new Vector3((float)rand.NextDouble(), (float)rand.NextDouble(), 0) - new Vector3(1.0f, 1.0f, 0.0f);
+                p = 2.0f * new Vector3(Rand(), Rand(), 0) - new Vector3(1.0f, 1.0f, 0.0f);
             } while (p.LengthSquared() >= 1.0f);
             return p;
         }

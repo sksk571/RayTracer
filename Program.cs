@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Numerics;
+using System.Threading.Tasks;
 
 namespace RayTracer
 {
@@ -12,22 +13,25 @@ namespace RayTracer
         {
             using (var writer = File.CreateText(@"./out/result.ppm"))
             {
-                int nx = 200;
-                int ny = 100;
+                int nx = 400;
+                int ny = 200;
                 int ns = 100;
                 writer.Write($"P3\n{nx} {ny}\n255\n");
 
+                Util.InitRandom(Environment.TickCount);
                 IHittable world = RandomScene();
-                Camera cam = new Camera(new Vector3(4,2f,2.5f), new Vector3(0,1,0), new Vector3(0,1,0), 45.0f, ((float)nx) / ny, 0.1f);
-
-                for (int j = ny - 1; j >= 0; --j)
-                    for (int i = 0; i < nx; ++i)
+                Camera cam = new Camera(new Vector3(9.5f, 2f, 2.5f), new Vector3(3, 0.5f, 0.65f), new Vector3(0,1,0), 45.0f, ((float)nx) / ny, 0.01f);
+                Vector3[,] fb = new Vector3[ny, nx];
+                Parallel.For(0, ny, y =>
+                {
+                    Util.InitRandom((y * 9781 + Environment.TickCount * 6271) | 1);
+                    for (int x = 0; x < nx; ++x)
                     {
                         Vector3 color = Vector3.Zero;
                         for (int s = 0; s < ns; ++s)
                         {
-                            float u = ((float)i + Util.Rand()) / nx;
-                            float v = ((float)j + Util.Rand()) / ny;
+                            float u = ((float)x + Util.Rand()) / nx;
+                            float v = ((float)y + Util.Rand()) / ny;
                             Ray r = cam.GetRay(u, v);
                             color += Color(r, world, 0);
                         }
@@ -35,11 +39,16 @@ namespace RayTracer
                         // gamma correction
                         color = new Vector3((float)Math.Sqrt(color.X), (float)Math.Sqrt(color.Y), (float)Math.Sqrt(color.Z));
 
-                        int ir = (int)(255 * color.X);
-                        int ig = (int)(255 * color.Y);
-                        int ib = (int)(255 * color.Z);
-                        writer.WriteLine("{0} {1} {2}", ir, ig, ib);
+                        fb[ny-y-1,x] = color;
                     }
+                });
+                foreach (var color in fb)
+                {
+                    int ir = (int)(255 * color.X);
+                    int ig = (int)(255 * color.Y);
+                    int ib = (int)(255 * color.Z);
+                    writer.WriteLine("{0} {1} {2}", ir, ig, ib);
+                }
             }
         }
 
@@ -91,8 +100,8 @@ namespace RayTracer
                     }
                 }
             list[i++] = new Sphere(new Vector3(0, 1, 0), 1.0f, new Dielectric(1.5f));
-            list[i++] = new Sphere(new Vector3(-2, 1, 0), 1.0f, new Lambertian(new Vector3(0.4f, 0.2f, 0.1f)));
-            list[i++] = new Sphere(new Vector3(2, 1, 0), 1.0f, new Metal(new Vector3(0.7f, 0.6f, 0.5f), 0.0f));
+            list[i++] = new Sphere(new Vector3(-4, 1, 0), 1.0f, new Lambertian(new Vector3(0.4f, 0.2f, 0.1f)));
+            list[i++] = new Sphere(new Vector3(4, 1, 0), 1.0f, new Metal(new Vector3(0.7f, 0.6f, 0.5f), 0.0f));
             return new HittableList(list);
         }
     }
