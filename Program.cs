@@ -73,7 +73,7 @@ namespace RayTracer
 
         static IHittable RandomScene()
         {
-            int n = 488;
+            int n = 500;
             IHittable[] list = new IHittable[n];
             list[0] = new Sphere(new Vector3(0, -1000f, 0), 1000, new Lambertian(new Vector3(0.5f, 0.5f, 0.5f)));
             int i = 1;
@@ -82,7 +82,7 @@ namespace RayTracer
                 {
                     float chooseMat = Util.Rand();
                     Vector3 center = new Vector3(a + 0.9f * Util.Rand(), 0.2f, b + 0.9f*Util.Rand());
-                    //if ((center - new Vector3(4, 0.2f, 0)).Length() > 0.9f)
+                    if ((center - new Vector3(4, 0.2f, 0)).Length() > 0.9f)
                     {
                         if (chooseMat < 0.8f)
                         {
@@ -102,6 +102,7 @@ namespace RayTracer
             list[i++] = new Sphere(new Vector3(0, 1, 0), 1.0f, new Dielectric(1.5f));
             list[i++] = new Sphere(new Vector3(-4, 1, 0), 1.0f, new Lambertian(new Vector3(0.4f, 0.2f, 0.1f)));
             list[i++] = new Sphere(new Vector3(4, 1, 0), 1.0f, new Metal(new Vector3(0.7f, 0.6f, 0.5f), 0.0f));
+            Array.Resize(ref list, i);
             return new HittableList(list);
         }
     }
