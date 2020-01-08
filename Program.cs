@@ -17,9 +17,16 @@ namespace RayTracer
                 int ns = 100;
                 writer.Write($"P3\n{nx} {ny}\n255\n");
 
-                IHittable world = RandomScene();
-                //Camera cam = new Camera(90.0f, ((float)nx) / ny);
-                Camera cam = new Camera(new Vector3(-2,2,1), new Vector3(0,0,-1), new Vector3(0,1,0), 90.0f, ((float)nx) / ny);
+                IHittable world = new HittableList(
+                    new[]
+                    {
+                        new Sphere(new Vector3(0,0,-1), 0.5f, new Lambertian(new Vector3(0.8f, 0.3f, 0.3f))),
+                        new Sphere(new Vector3(0,-100.5f,-1), 100f, new Lambertian(new Vector3(0.8f, 0.8f, 0.0f))),
+                        new Sphere(new Vector3(1,0,-1), 0.5f, new Metal(new Vector3(0.8f, 0.6f, 0.2f), 0.3f)),
+                        new Sphere(new Vector3(-1,0,-1), 0.5f, new Dielectric(1.8f)),
+                    });
+                Camera cam = new Camera(new Vector3(0,0,0), new Vector3(0,0,-1), new Vector3(0,1,0), 90.0f, ((float)nx) / ny, 2.0f);
+                //Camera cam = new Camera(new Vector3(3,3,2), new Vector3(0,0,-1), new Vector3(0,1,0), 90.0f, ((float)nx) / ny, 2.0f);
     
                 for (int j = ny - 1; j >= 0; --j)
                     for (int i = 0; i < nx; ++i)
@@ -67,7 +74,7 @@ namespace RayTracer
         {
             int n = 485;
             IHittable[] list = new IHittable[n];
-            list[0] = new Sphere(new Vector3(0, -1000, 0), 1000, new Lambertian(new Vector3(0.5f, 0.5f, 0.5f)));
+            list[0] = new Sphere(new Vector3(0, -1000f, 0), 1000, new Lambertian(new Vector3(0.5f, 0.5f, 0.5f)));
             int i = 1;
             for (int a = -11; a < 11; ++a)
                 for (int b = -11; b < 11; ++b)
