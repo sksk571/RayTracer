@@ -16,7 +16,7 @@ namespace RayTracer
             attenuation = new Vector3(1.0f, 1.0f, 1.0f);
             Vector3 refracted = VectorUtil.Refract(rIn.Direction, hit.Normal, refIndex);
             if (refracted != Vector3.Zero &&
-                Util.Rand() < VectorUtil.Schlick(rIn.Direction, hit.Normal, refIndex))
+                Util.Rand() > VectorUtil.Schlick(rIn.Direction, hit.Normal, refIndex))
             {
                 scattered = new Ray(hit.P, refracted);
             }
