@@ -42,5 +42,33 @@ namespace RayTracer
                 return false;
             }
         }
+
+        public void Hit(in Rays rays, float tMin, float tMax, in Hits hits)
+        {
+            int n = rays.N;
+            int vectorSize = Vector<float>.Count;
+            int nV = n / vectorSize;
+
+            for (int i = 0, offset = 0; i < nV; ++i, offset += vectorSize)
+            {
+                Vector<float> ocX = Vector.Subtract(new Vector<float>(rays.OriginX, offset), new Vector<float>(center.X));
+                Vector<float> ocY = Vector.Subtract(new Vector<float>(rays.OriginY, offset), new Vector<float>(center.Y));
+                Vector<float> ocZ = Vector.Subtract(new Vector<float>(rays.OriginZ, offset), new Vector<float>(center.Z));
+
+                var directionX = new Vector<float>(rays.DirectionX, offset);
+                var directionY = new Vector<float>(rays.DirectionY, offset);
+                var directionZ = new Vector<float>(rays.DirectionZ, offset);
+
+                Vector<float> a = Vector.Add(Vector.Add(Vector.Multiply(directionX, directionX), Vector.Multiply(directionY, directionY)), Vector.Multiply(directionZ, directionZ));
+                Vector<float> b = Vector.Multiply(2.0f, Vector.Add(Vector.Add(Vector.Multiply(ocX, directionX), Vector.Multiply(ocY, directionY)), Vector.Multiply(ocZ, directionZ)));
+                Vector<float> c = Vector.Subtract(Vector.Add(Vector.Add(Vector.Multiply(ocX, ocX), Vector.Multiply(ocY, ocY)), Vector.Multiply(ocZ, ocZ)), new Vector<float>(radius * radius));
+                Vector<float> discriminant = Vector.Multiply(Vector.Multiply(b, b), Vector.Multiply(4.0f, Vector.Multiply(a, c)));
+                Vector<float> t = Vector.Divide(Vector.Subtract(Vector.Negate(b), Vector.SquareRoot(discriminant)), Vector.Multiply(2.0f, a));
+                Vector<int> mask = Vector.BitwiseAnd(Vector.BitwiseAnd(Vector.GreaterThan(discriminant, Vector<float>.Zero), Vector.GreaterThanOrEqual(t, new Vector<float>(tMin))), Vector.LessThanOrEqual(t, new Vector<float>(tMax)));
+                t = Vector.ConditionalSelect(mask, t, new Vector<float>(float.NaN));
+                t.CopyTo(hits.T, offset);
+                rays.PointAtParameter(hits.T, hits.PX, hits.PY, hits.PZ);
+            }
+        }
     }
 }

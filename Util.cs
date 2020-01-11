@@ -37,5 +37,26 @@ namespace RayTracer
             } while (p.LengthSquared() >= 1.0f);
             return p;
         }
+
+        public static void RandInUnitSphere(float[] rdX, float[] rdY, float[] rdZ)
+        {
+            for (int i = 0; i < rdX.Length; ++i)
+            {
+                Vector3 p = RandInUnitSphere();
+                rdX[i] = p.X;
+                rdY[i] = p.Y;
+                rdZ[i] = p.Z;
+            }
+        }
+
+        public static void RandInUnitDisk(float[] rdX, float[] rdY)
+        {
+            for (int i = 0; i < rdX.Length; ++i)
+            {
+                Vector3 p = RandInUnitDisk();
+                rdX[i] = p.X;
+                rdY[i] = p.Y;
+            }
+        }
     }
 }

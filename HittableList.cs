@@ -23,5 +23,16 @@ namespace RayTracer
             }
             return hitAnything;
         }
+
+        public void Hit(in Rays rays, float tMin, float tMax, in Hits hits)
+        {
+            for (int i = 0; i < list.Length; ++i)
+            {
+                //Hits temp = new Hits(hits.N);
+                list[i].Hit(rays, tMin, tMax, hits);
+
+                // TODO: calculate closest hits
+            }
+        }
     }
 }

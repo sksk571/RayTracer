@@ -13,26 +13,39 @@ namespace RayTracer
         {
             int nx = 800;
             int ny = 400;
-            int ns = 100;
+            int ns = 64;
 
             Util.InitRandom(Environment.TickCount);
             IHittable world = RandomScene();
             Camera cam = new Camera(new Vector3(9.5f, 2f, 2.5f), new Vector3(3, 0.5f, 0.65f), new Vector3(0,1,0), 25.0f, ((float)nx) / ny, 0.01f);
+
             Vector3[,] fb = new Vector3[ny, nx];
             Parallel.For(0, ny, y =>
             {
                 Util.InitRandom((y * 9781 + Environment.TickCount * 6271) | 1);
+                float[] u = new float[ns];
+                float[] v = new float[ns];
+
                 for (int x = 0; x < nx; ++x)
                 {
-                    Vector3 color = Vector3.Zero;
+                    // Vector3 color = Vector3.Zero;
+                    // for (int s = 0; s < ns; ++s)
+                    // {
+                    //     float u = ((float)x + Util.Rand()) / nx;
+                    //     float v = ((float)y + Util.Rand()) / ny;
+                    //     Ray r = cam.GetRay(u, v);
+                    //     color += Color(r, world, 0);
+                    // }
                     for (int s = 0; s < ns; ++s)
                     {
-                        float u = ((float)x + Util.Rand()) / nx;
-                        float v = ((float)y + Util.Rand()) / ny;
-                        Ray r = cam.GetRay(u, v);
-                        color += Color(r, world, 0);
+                        u[s] = ((float)x + Util.Rand()) / nx;
+                        v[s] = ((float)y + Util.Rand()) / ny;
                     }
-                    color /= ns;
+                    Rays r = new Rays(ns);
+                    cam.GetRays(u, v, r);
+                    Vector3 color = Color(r, world, 0);
+
+                    //color /= ns;
                     // gamma correction
                     color = new Vector3((float)Math.Sqrt(color.X), (float)Math.Sqrt(color.Y), (float)Math.Sqrt(color.Z));
 
@@ -71,6 +84,55 @@ namespace RayTracer
             Vector3 unitDirection = Vector3.Normalize(r.Direction);
             float t = 0.5f * (unitDirection.Y + 1.0f);
             return Vector3.Lerp(new Vector3(1.0f, 1.0f, 1.0f), new Vector3(0.5f, 0.7f, 1.0f), t);
+        }
+
+        static Vector3 Color(in Rays rays, IHittable world, int depth)
+        {
+        //     HitRecord hit = new HitRecord();
+        //     if (world.Hit(r, 0.001f, float.MaxValue, ref hit))
+        //     {
+        //         Ray scattered;
+        //         Vector3 attenuation;
+        //         if (depth < 50 && hit.Material.Scatter(r, hit, out attenuation, out scattered))
+        //         {
+        //             return attenuation * Color(scattered, world, depth + 1);
+        //         }
+        //         else return Vector3.Zero;
+        //    }
+            int n = rays.N;
+            int vectorSize = Vector<float>.Count;
+            int nV = n / vectorSize;
+
+            float colorX = 0;
+            float colorY = 0;
+            float colorZ = 0;
+            for (int i = 0, offset = 0; i < nV; ++i, offset += vectorSize)
+            {
+                var directionX = new Vector<float>(rays.DirectionX, offset);
+                var directionY = new Vector<float>(rays.DirectionY, offset);
+                var directionZ = new Vector<float>(rays.DirectionZ, offset);
+                var directionLength = Vector.SquareRoot(Vector.Add(Vector.Add(Vector.Multiply(directionX, directionX), Vector.Multiply(directionY, directionY)), Vector.Multiply(directionZ, directionZ)));
+                var t = Vector.Multiply(0.5f, Vector.Add(Vector.Divide(directionY, directionLength), Vector<float>.One));
+                var oneMinusT = Vector.Subtract(Vector<float>.One, t);
+
+                // x = (1-t)*1.0 + t * 0.5
+                var colX = Vector.Add(Vector.Multiply(oneMinusT, Vector<float>.One),
+                    Vector.Multiply(t, new Vector<float>(0.5f)));
+                // y = (1-t)*1.0 + t * 0.7
+                var colY = Vector.Add(Vector.Multiply(oneMinusT, Vector<float>.One),
+                    Vector.Multiply(t, new Vector<float>(0.7f)));
+                // z = (1-t)*1.0 + t * 1.0
+                var colZ = Vector.Add(Vector.Multiply(oneMinusT, Vector<float>.One),
+                    Vector.Multiply(t, new Vector<float>(1.0f)));
+
+                colorX += Vector.Dot(colX, Vector<float>.One);
+                colorY += Vector.Dot(colY, Vector<float>.One);
+                colorZ += Vector.Dot(colZ, Vector<float>.One);
+            }
+            colorX /= n;
+            colorY /= n;
+            colorZ /= n;
+            return new Vector3(colorX, colorY, colorZ);
         }
 
         static IHittable RandomScene()
