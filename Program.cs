@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 
@@ -106,6 +107,15 @@ namespace RayTracer
             float colorX = 0;
             float colorY = 0;
             float colorZ = 0;
+
+            Hits hits = new Hits(n);
+            world.Hit(rays, 0.001f, float.MaxValue, hits);
+
+            for (int i = 0, offset = 0; i < nV; ++i, offset += vectorSize)
+            {
+                colorX += Vector.Dot(new Vector<float>(hits.T, offset), Vector<float>.One);
+            }
+
             for (int i = 0, offset = 0; i < nV; ++i, offset += vectorSize)
             {
                 var directionX = new Vector<float>(rays.DirectionX, offset);
@@ -137,32 +147,32 @@ namespace RayTracer
 
         static IHittable RandomScene()
         {
-            int n = 500;
+            int n = 5;//00;
             IHittable[] list = new IHittable[n];
             list[0] = new Sphere(new Vector3(0, -1000f, 0), 1000, new Lambertian(new Vector3(0.5f, 0.5f, 0.5f)));
             int i = 1;
-            for (int a = -11; a < 11; ++a)
-                for (int b = -11; b < 11; ++b)
-                {
-                    float chooseMat = Util.Rand();
-                    Vector3 center = new Vector3(a + 0.9f * Util.Rand(), 0.2f, b + 0.9f*Util.Rand());
-                    if ((center - new Vector3(4, 0.2f, 0)).Length() > 0.9f)
-                    {
-                        if (chooseMat < 0.8f)
-                        {
-                            list[i++] = new Sphere(center, 0.2f, new Lambertian(new Vector3(Util.Rand() * Util.Rand(),Util.Rand() * Util.Rand(),Util.Rand() * Util.Rand())));
-                        }
-                        else if (chooseMat < 0.95f)
-                        {
-                            list[i++] = new Sphere(center, 0.2f, 
-                                new Metal(new Vector3(0.5f*(1 + Util.Rand()), 0.5f*(1 + Util.Rand()), 0.5f*(1 + Util.Rand())), 0.5f*(1 + Util.Rand())));
-                        }
-                        else
-                        {
-                            list[i++] = new Sphere(center, 0.2f, new Dielectric(1.5f));
-                        }
-                    }
-                }
+            // for (int a = -11; a < 11; ++a)
+            //     for (int b = -11; b < 11; ++b)
+            //     {
+            //         float chooseMat = Util.Rand();
+            //         Vector3 center = new Vector3(a + 0.9f * Util.Rand(), 0.2f, b + 0.9f*Util.Rand());
+            //         if ((center - new Vector3(4, 0.2f, 0)).Length() > 0.9f)
+            //         {
+            //             if (chooseMat < 0.8f)
+            //             {
+            //                 list[i++] = new Sphere(center, 0.2f, new Lambertian(new Vector3(Util.Rand() * Util.Rand(),Util.Rand() * Util.Rand(),Util.Rand() * Util.Rand())));
+            //             }
+            //             else if (chooseMat < 0.95f)
+            //             {
+            //                 list[i++] = new Sphere(center, 0.2f, 
+            //                     new Metal(new Vector3(0.5f*(1 + Util.Rand()), 0.5f*(1 + Util.Rand()), 0.5f*(1 + Util.Rand())), 0.5f*(1 + Util.Rand())));
+            //             }
+            //             else
+            //             {
+            //                 list[i++] = new Sphere(center, 0.2f, new Dielectric(1.5f));
+            //             }
+            //         }
+            //     }
             list[i++] = new Sphere(new Vector3(0, 1, 0), 1.0f, new Dielectric(1.5f));
             list[i++] = new Sphere(new Vector3(-4, 1, 0), 1.0f, new Lambertian(new Vector3(0.4f, 0.2f, 0.1f)));
             list[i++] = new Sphere(new Vector3(4, 1, 0), 1.0f, new Metal(new Vector3(0.7f, 0.6f, 0.5f), 0.0f));

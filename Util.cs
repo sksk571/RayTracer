@@ -49,14 +49,20 @@ namespace RayTracer
             }
         }
 
-        public static void RandInUnitDisk(float[] rdX, float[] rdY)
+        public static Vector3V RandInUnitDiskV()
         {
-            for (int i = 0; i < rdX.Length; ++i)
+            int vectorSize = Vector<float>.Count;
+
+            float[] rdX = new float[vectorSize];
+            float[] rdY = new float[vectorSize];
+
+            for (int i = 0; i < vectorSize; ++i)
             {
                 Vector3 p = RandInUnitDisk();
                 rdX[i] = p.X;
                 rdY[i] = p.Y;
             }
+            return new Vector3V(new Vector<float>(rdX), new Vector<float>(rdY), Vector<float>.Zero);
         }
     }
 }

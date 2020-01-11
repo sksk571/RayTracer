@@ -6,13 +6,17 @@ namespace RayTracer
     class Sphere : IHittable
     {
         private readonly Vector3 center;
+        private readonly Vector3V centerV;
         private readonly float radius;
+        private readonly Vector<float> radiusV;
         private readonly Material material;
 
         public Sphere(Vector3 center, float radius, Material material)
         {
             this.center = center;
+            this.centerV = new Vector3V(center);
             this.radius = radius;
+            this.radiusV = new Vector<float>(radius);
             this.material = material;
         }
 
@@ -49,26 +53,27 @@ namespace RayTracer
             int vectorSize = Vector<float>.Count;
             int nV = n / vectorSize;
 
-            for (int i = 0, offset = 0; i < nV; ++i, offset += vectorSize)
+            var tMinV = new Vector<float>(tMin);
+            var tMaxV = new Vector<float>(tMax);
+
+            for (int i = 0; i< n; i += vectorSize)
             {
-                Vector<float> ocX = Vector.Subtract(new Vector<float>(rays.OriginX, offset), new Vector<float>(center.X));
-                Vector<float> ocY = Vector.Subtract(new Vector<float>(rays.OriginY, offset), new Vector<float>(center.Y));
-                Vector<float> ocZ = Vector.Subtract(new Vector<float>(rays.OriginZ, offset), new Vector<float>(center.Z));
+                Vector3V oc = new Vector3V(rays.OriginX, rays.OriginY, rays.OriginZ, i) - centerV;
+                Vector3V direction = new Vector3V(rays.DirectionX, rays.DirectionY, rays.DirectionZ, i);
+                Vector<float> a = Vector3V.Dot(direction, direction);
+                Vector<float> b = 2.0f * Vector3V.Dot(oc, direction);
+                Vector<float> c = Vector3V.Dot(oc, oc) - radiusV * radiusV;
+                Vector<float> discriminant = b*b - 4*a*c;
 
-                var directionX = new Vector<float>(rays.DirectionX, offset);
-                var directionY = new Vector<float>(rays.DirectionY, offset);
-                var directionZ = new Vector<float>(rays.DirectionZ, offset);
-
-                Vector<float> a = Vector.Add(Vector.Add(Vector.Multiply(directionX, directionX), Vector.Multiply(directionY, directionY)), Vector.Multiply(directionZ, directionZ));
-                Vector<float> b = Vector.Multiply(2.0f, Vector.Add(Vector.Add(Vector.Multiply(ocX, directionX), Vector.Multiply(ocY, directionY)), Vector.Multiply(ocZ, directionZ)));
-                Vector<float> c = Vector.Subtract(Vector.Add(Vector.Add(Vector.Multiply(ocX, ocX), Vector.Multiply(ocY, ocY)), Vector.Multiply(ocZ, ocZ)), new Vector<float>(radius * radius));
-                Vector<float> discriminant = Vector.Multiply(Vector.Multiply(b, b), Vector.Multiply(4.0f, Vector.Multiply(a, c)));
-                Vector<float> t = Vector.Divide(Vector.Subtract(Vector.Negate(b), Vector.SquareRoot(discriminant)), Vector.Multiply(2.0f, a));
-                Vector<int> mask = Vector.BitwiseAnd(Vector.BitwiseAnd(Vector.GreaterThan(discriminant, Vector<float>.Zero), Vector.GreaterThanOrEqual(t, new Vector<float>(tMin))), Vector.LessThanOrEqual(t, new Vector<float>(tMax)));
-                t = Vector.ConditionalSelect(mask, t, new Vector<float>(float.NaN));
-                t.CopyTo(hits.T, offset);
-                rays.PointAtParameter(hits.T, hits.PX, hits.PY, hits.PZ);
+                Vector<float> t = (-b -Vector.SquareRoot(discriminant)) / (2.0f * a);
+                t = Vector.ConditionalSelect(
+                    Vector.GreaterThan(discriminant, Vector<float>.Zero) & 
+                    Vector.GreaterThanOrEqual(t, tMinV) & 
+                    Vector.LessThanOrEqual(t, tMaxV), t, Vector<float>.Zero);
+                t.CopyTo(hits.T, i);
             }
+
+            rays.PointAtParameter(hits.T, hits.PX, hits.PY, hits.PZ);
         }
     }
 }
