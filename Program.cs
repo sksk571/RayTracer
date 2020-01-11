@@ -11,36 +11,37 @@ namespace RayTracer
 
         static void Main(string[] args)
         {
+            int nx = 800;
+            int ny = 400;
+            int ns = 100;
+
+            Util.InitRandom(Environment.TickCount);
+            IHittable world = RandomScene();
+            Camera cam = new Camera(new Vector3(9.5f, 2f, 2.5f), new Vector3(3, 0.5f, 0.65f), new Vector3(0,1,0), 25.0f, ((float)nx) / ny, 0.01f);
+            Vector3[,] fb = new Vector3[ny, nx];
+            Parallel.For(0, ny, y =>
+            {
+                Util.InitRandom((y * 9781 + Environment.TickCount * 6271) | 1);
+                for (int x = 0; x < nx; ++x)
+                {
+                    Vector3 color = Vector3.Zero;
+                    for (int s = 0; s < ns; ++s)
+                    {
+                        float u = ((float)x + Util.Rand()) / nx;
+                        float v = ((float)y + Util.Rand()) / ny;
+                        Ray r = cam.GetRay(u, v);
+                        color += Color(r, world, 0);
+                    }
+                    color /= ns;
+                    // gamma correction
+                    color = new Vector3((float)Math.Sqrt(color.X), (float)Math.Sqrt(color.Y), (float)Math.Sqrt(color.Z));
+
+                    fb[ny-y-1,x] = color;
+                }
+            });
+            
             using (var writer = File.CreateText(@"./out/result.ppm"))
             {
-                int nx = 800;
-                int ny = 400;
-                int ns = 100;
-
-                Util.InitRandom(Environment.TickCount);
-                IHittable world = RandomScene();
-                Camera cam = new Camera(new Vector3(9.5f, 2f, 2.5f), new Vector3(3, 0.5f, 0.65f), new Vector3(0,1,0), 25.0f, ((float)nx) / ny, 0.01f);
-                Vector3[,] fb = new Vector3[ny, nx];
-                Parallel.For(0, ny, y =>
-                {
-                    Util.InitRandom((y * 9781 + Environment.TickCount * 6271) | 1);
-                    for (int x = 0; x < nx; ++x)
-                    {
-                        Vector3 color = Vector3.Zero;
-                        for (int s = 0; s < ns; ++s)
-                        {
-                            float u = ((float)x + Util.Rand()) / nx;
-                            float v = ((float)y + Util.Rand()) / ny;
-                            Ray r = cam.GetRay(u, v);
-                            color += Color(r, world, 0);
-                        }
-                        color /= ns;
-                        // gamma correction
-                        color = new Vector3((float)Math.Sqrt(color.X), (float)Math.Sqrt(color.Y), (float)Math.Sqrt(color.Z));
-
-                        fb[ny-y-1,x] = color;
-                    }
-                });
                 writer.Write($"P3\n{nx} {ny}\n255\n");
                 foreach (var color in fb)
                 {
