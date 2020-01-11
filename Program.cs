@@ -14,7 +14,7 @@ namespace RayTracer
         {
             int nx = 800;
             int ny = 400;
-            int ns = 64;
+            int ns = 256;
 
             Util.InitRandom(Environment.TickCount);
             IHittable world = RandomScene();
@@ -110,13 +110,9 @@ namespace RayTracer
             Hits hits = new Hits(n);
             world.Hit(rays, 0.001f, float.MaxValue, hits);
 
-            for (int i = 0; i < n; i += vectorSize)
-            {
-                colorX += Vector.Dot(new Vector<float>(hits.T, i), new Vector<float>(1f/n));
-            }
-
             Vector3V skyA = new Vector3V(new Vector3(1.0f, 1.0f, 1.0f));
             Vector3V skyB = new Vector3V(new Vector3(0.5f, 0.7f, 1.0f));
+            Vector3V sphereColor = new Vector3V(new Vector3(1.0f, 0, 0));
 
             for (int i = 0; i < n; i += vectorSize)
             {
@@ -125,11 +121,15 @@ namespace RayTracer
                 
                 var t = 0.5f * (direction.Y + Vector<float>.One);
 
-                var color = Vector3V.Lerp(skyA, skyB, t);
+                var skyColor = Vector3V.Lerp(skyA, skyB, t);
 
-                colorX += Vector.Dot(color.X, new Vector<float>(1f/n));
-                colorY += Vector.Dot(color.Y, new Vector<float>(1f/n));
-                colorZ += Vector.Dot(color.Z, new Vector<float>(1f/n));
+                Vector<float> x = Vector.ConditionalSelect(new Vector<float>(hits.T, i), sphereColor.X, skyColor.X);
+                Vector<float> y = Vector.ConditionalSelect(new Vector<float>(hits.T, i), sphereColor.Y, skyColor.Y);
+                Vector<float> z = Vector.ConditionalSelect(new Vector<float>(hits.T, i), sphereColor.Z, skyColor.Z);
+
+                colorX += Vector.Dot(x, new Vector<float>(1f/n));
+                colorY += Vector.Dot(y, new Vector<float>(1f/n));
+                colorZ += Vector.Dot(z, new Vector<float>(1f/n));
             }
 
             return new Vector3(colorX, colorY, colorZ);
@@ -163,8 +163,8 @@ namespace RayTracer
             //             }
             //         }
             //     }
-            list[i++] = new Sphere(new Vector3(0, 1, 0), 1.0f, new Dielectric(1.5f));
-            list[i++] = new Sphere(new Vector3(-4, 1, 0), 1.0f, new Lambertian(new Vector3(0.4f, 0.2f, 0.1f)));
+            //list[i++] = new Sphere(new Vector3(0, 1, 0), 1.0f, new Dielectric(1.5f));
+            //list[i++] = new Sphere(new Vector3(-4, 1, 0), 1.0f, new Lambertian(new Vector3(0.4f, 0.2f, 0.1f)));
             list[i++] = new Sphere(new Vector3(4, 1, 0), 1.0f, new Metal(new Vector3(0.7f, 0.6f, 0.5f), 0.0f));
             Array.Resize(ref list, i);
             return new HittableList(list);
