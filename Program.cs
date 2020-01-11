@@ -39,7 +39,8 @@ namespace RayTracer
                     fb[ny-y-1,x] = color;
                 }
             });
-            
+
+            if (!Directory.Exists("./out")) Directory.CreateDirectory("./out");
             using (var writer = File.CreateText(@"./out/result.ppm"))
             {
                 writer.Write($"P3\n{nx} {ny}\n255\n");
