@@ -102,7 +102,6 @@ namespace RayTracer
         //    }
             int n = rays.N;
             int vectorSize = Vector<float>.Count;
-            int nV = n / vectorSize;
 
             float colorX = 0;
             float colorY = 0;
@@ -111,37 +110,28 @@ namespace RayTracer
             Hits hits = new Hits(n);
             world.Hit(rays, 0.001f, float.MaxValue, hits);
 
-            for (int i = 0, offset = 0; i < nV; ++i, offset += vectorSize)
+            for (int i = 0; i < n; i += vectorSize)
             {
-                colorX += Vector.Dot(new Vector<float>(hits.T, offset), Vector<float>.One);
+                colorX += Vector.Dot(new Vector<float>(hits.T, i), new Vector<float>(1f/n));
             }
 
-            for (int i = 0, offset = 0; i < nV; ++i, offset += vectorSize)
+            Vector3V skyA = new Vector3V(new Vector3(1.0f, 1.0f, 1.0f));
+            Vector3V skyB = new Vector3V(new Vector3(0.5f, 0.7f, 1.0f));
+
+            for (int i = 0; i < n; i += vectorSize)
             {
-                var directionX = new Vector<float>(rays.DirectionX, offset);
-                var directionY = new Vector<float>(rays.DirectionY, offset);
-                var directionZ = new Vector<float>(rays.DirectionZ, offset);
-                var directionLength = Vector.SquareRoot(Vector.Add(Vector.Add(Vector.Multiply(directionX, directionX), Vector.Multiply(directionY, directionY)), Vector.Multiply(directionZ, directionZ)));
-                var t = Vector.Multiply(0.5f, Vector.Add(Vector.Divide(directionY, directionLength), Vector<float>.One));
-                var oneMinusT = Vector.Subtract(Vector<float>.One, t);
+                var direction = new Vector3V(rays.DirectionX, rays.DirectionY, rays.DirectionZ, i);
+                direction = Vector3V.Normalize(direction);
+                
+                var t = 0.5f * (direction.Y + Vector<float>.One);
 
-                // x = (1-t)*1.0 + t * 0.5
-                var colX = Vector.Add(Vector.Multiply(oneMinusT, Vector<float>.One),
-                    Vector.Multiply(t, new Vector<float>(0.5f)));
-                // y = (1-t)*1.0 + t * 0.7
-                var colY = Vector.Add(Vector.Multiply(oneMinusT, Vector<float>.One),
-                    Vector.Multiply(t, new Vector<float>(0.7f)));
-                // z = (1-t)*1.0 + t * 1.0
-                var colZ = Vector.Add(Vector.Multiply(oneMinusT, Vector<float>.One),
-                    Vector.Multiply(t, new Vector<float>(1.0f)));
+                var color = Vector3V.Lerp(skyA, skyB, t);
 
-                colorX += Vector.Dot(colX, Vector<float>.One);
-                colorY += Vector.Dot(colY, Vector<float>.One);
-                colorZ += Vector.Dot(colZ, Vector<float>.One);
+                colorX += Vector.Dot(color.X, new Vector<float>(1f/n));
+                colorY += Vector.Dot(color.Y, new Vector<float>(1f/n));
+                colorZ += Vector.Dot(color.Z, new Vector<float>(1f/n));
             }
-            colorX /= n;
-            colorY /= n;
-            colorZ /= n;
+
             return new Vector3(colorX, colorY, colorZ);
         }
 

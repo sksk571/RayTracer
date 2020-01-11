@@ -64,6 +64,17 @@ namespace RayTracer
             return left.X * right.X + left.Y * right.Y + left.Z * right.Z;
         }
 
+        public static Vector3V Normalize(in Vector3V v)
+        {
+            var length = Vector.SquareRoot(Dot(v, v));
+            return new Vector3V(v.X / length, v.Y / length, v.Z / length);
+        }
+
+        public static Vector3V Lerp(in Vector3V left, in Vector3V right, Vector<float> t)
+        {
+            return (Vector<float>.One-t) * left + t * right;
+        }
+
         public static Vector3V operator * (in Vector3V left, in Vector3V right)
         {
             return Mul(left, right);
