@@ -11,11 +11,11 @@ namespace RayTracer
 
         static void Main(string[] args)
         {
-            using (var writer = File.CreateText(@"./out/result.ppm"))
+            using (var writer = File.CreateText(@"./result.ppm"))
             {
                 int nx = 800;
                 int ny = 400;
-                int ns = 100;
+                int ns = 32;
 
                 Util.InitRandom(Environment.TickCount);
                 IHittable world = RandomScene();
